@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="YKS Soru Bankası">
+    <link rel="manifest" href="manifest.json">
+    <title>YKS Soru Bankası</title>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #fae8ff 50%, #fce7f3 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .header-content { display: flex; align-items: center; gap: 1rem; justify-content: space-between; flex-wrap: wrap; }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .header-icon { font-size: 3rem; }
+        .header-title {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-subtitle { color: #6b7280; margin-top: 0.5rem; }
+        .sync-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .sync-btn {
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .sync-btn:hover { transform: scale(1.05); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .sync-btn:active { transform: scale(0.95); }
+        .btn-export { background: linear-gradient(to right, #10b981, #14b8a6); color: white; }
+        .btn-import { background: linear-gradient(to right, #3b82f6, #6366f1); color: white; }
+        .content-box {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f3f4f6;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-left { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        .back-btn:hover { background: linear-gradient(to right, #e0e7ff, #f3e8ff); transform: scale(1.1); }
+        .path-display {
+            background: linear-gradient(to right, #f9fafb, #f3f4f6);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 0;
+        }
+        .path-icon { font-size: 1.2rem; flex-shrink: 0; }
+        .path-text {
+            font-weight: bold;
+            color: #374151;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .add-btn {
+            background: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
+            border: none;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .add-btn:active { transform: scale(0.95); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2); }
+        .gallery-btn {
+            background: linear-gradient(to right, #10b981, #14b8a6);
+            border: none;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .gallery-btn:active { transform: scale(0.95); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2); }
+        .photo-buttons { display: flex; gap: 0.5rem; flex-shrink: 0; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        @media (min-width: 768px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+        .folder-card {
+            background: linear-gradient(135deg, var(--color-from), var(--color-to));
+            border: none;
+            border-radius: 16px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .folder-card:hover { transform: scale(1.05) rotate(-1deg); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+        .folder-card:active { transform: scale(0.95); }
+        .folder-icon { font-size: 3rem; margin-bottom: 1rem; display: block; text-align: center; transition: transform 0.3s; }
+        .folder-card:hover .folder-icon { transform: scale(1.1); }
+        .folder-name { font-weight: bold; color: white; text-align: center; font-size: 1.1rem; }
+        .folder-arrow { position: absolute; bottom: 1rem; right: 1rem; font-size: 1.5rem; color: rgba(255, 255, 255, 0.7); }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; }
+        .empty-icon {
+            font-size: 5rem;
+            background: linear-gradient(135deg, #e0e7ff, #f3e8ff);
+            border-radius: 24px;
+            padding: 1.5rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .empty-title { font-size: 1.5rem; font-weight: bold; color: #4b5563; margin-bottom: 0.5rem; }
+        .empty-subtitle { color: #6b7280; }
+        .question-card {
+            background: white;
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 1rem;
+            transition: all 0.3s;
+            position: relative;
+            cursor: pointer;
+        }
+        .question-card:hover { transform: scale(1.05); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border-color: #a78bfa; }
+        .question-img-container {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            position: relative;
+        }
+        .question-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .question-card:hover .question-img { transform: scale(1.1); }
+        .question-badge { position: absolute; top: 0.5rem; font-size: 1.5rem; }
+        .badge-left { left: 0.5rem; }
+        .badge-right { right: 0.5rem; }
+        .question-title { font-weight: bold; color: #1f2937; font-size: 0.9rem; }
+        .question-date { display: flex; align-items: center; gap: 0.25rem; color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem; }
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 50;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header {
+            background: linear-gradient(to right, #6366f1, #a855f7);
+            padding: 1.5rem;
+            border-radius: 24px 24px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .modal-header-content { display: flex; justify-content: space-between; align-items: center; }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .close-btn:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+        .modal-body { padding: 2rem; }
+        .code-box {
+            background: #1f2937;
+            color: #10b981;
+            padding: 1.5rem;
+            border-radius: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: #f9fafb;
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            min-height: 250px;
+        }
+        #qrcode { display: inline-block; }
+        #qrcode img { display: block !important; margin: 0 auto !important; }
+        .import-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+        .import-textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+        .copy-btn, .import-btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+        .copy-btn { background: linear-gradient(to right, #10b981, #14b8a6); }
+        .import-btn { background: linear-gradient(to right, #3b82f6, #6366f1); }
+        .copy-btn:hover, .import-btn:hover { transform: scale(1.02); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .info-text { color: #6b7280; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5; }
+        .qr-scanner-container { width: 100%; max-width: 400px; margin: 0 auto 1rem; border-radius: 16px; overflow: hidden; }
+        .scanner-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(to right, #8b5cf6, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .scanner-btn:hover { transform: scale(1.02); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .divider span {
+            padding: 0 1rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container" id="app"></div>
+    <script>
+const folderStructure={TYT:{'Türkçe':{'Dil Bilgisi':{},'Paragraf':{}},'Sosyal':{'Tarih':{},'Coğrafya':{},'Felsefe':{},'Din':{}},'Matematik':{'İlk 10 Konu':{},'Problem':{},'Geometri':{}},'Fen':{'Fizik':{},'Kimya':{},'Biyoloji':{}}},AYT:{'Edebiyat':{},'Sosyal-1':{},'Matematik':{}}};
+const folderIcons={'TYT':{icon:'📘',from:'#3b82f6',to:'#06b6d4'},'AYT':{icon:'⭐',from:'#a855f7',to:'#ec4899'},'Türkçe':{icon:'📖',from:'#f87171',to:'#fb923c'},'Sosyal':{icon:'🌍',from:'#4ade80',to:'#10b981'},'Matematik':{icon:'🔢',from:'#60a5fa',to:'#6366f1'},'Fen':{icon:'🧪',from:'#a78bfa',to:'#8b5cf6'},'Edebiyat':{icon:'✍️',from:'#f472b6',to:'#fb7185'},'Sosyal-1':{icon:'🗺️',from:'#2dd4bf',to:'#06b6d4'},'Tarih':{icon:'🏛️',from:'#fbbf24',to:'#f59e0b'},'Coğrafya':{icon:'🗺️',from:'#4ade80',to:'#14b8a6'},'Felsefe':{icon:'🤔',from:'#a78bfa',to:'#6366f1'},'Din':{icon:'☪️',from:'#34d399',to:'#10b981'},'Fizik':{icon:'⚡',from:'#fbbf24',to:'#fb923c'},'Kimya':{icon:'⚗️',from:'#a78bfa',to:'#ec4899'},'Biyoloji':{icon:'🧬',from:'#4ade80',to:'#84cc16'},'Dil Bilgisi':{icon:'📝',from:'#f87171',to:'#f472b6'},'Paragraf':{icon:'📄',from:'#fb923c',to:'#f87171'},'İlk 10 Konu':{icon:'1️⃣',from:'#60a5fa',to:'#06b6d4'},'Problem':{icon:'🧮',from:'#6366f1',to:'#60a5fa'},'Geometri':{icon:'📐',from:'#06b6d4',to:'#14b8a6'}};
+let currentPath=[],questions={},showExportModal=false,showImportModal=false,exportCode='',qrScanner=null,isScanning=false,selectedQuestion=null,editingNote=false,noteText='';
+
+function loadQuestions(){const s=localStorage.getItem('yksQuestions');if(s)try{questions=JSON.parse(s)}catch(e){}}
+function saveQuestions(){localStorage.setItem('yksQuestions',JSON.stringify(questions))}
+function getCurrentFolder(){let c=folderStructure;for(const p of currentPath)c=c[p];return c}
+function getPathString(){return currentPath.join('/')||'Ana Sayfa'}
+function handleFolderClick(f){currentPath.push(f);render()}
+function handleBack(){currentPath.pop();render()}
+function handleQuestionImage(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onloadend=()=>{const p=getPathString();const q={id:Date.now(),image:r.result,note:'',solution:null,date:new Date().toLocaleDateString('tr-TR')};if(!questions[p])questions[p]=[];questions[p].push(q);saveQuestions();render();alert('Soru eklendi! ✅')};r.readAsDataURL(f);e.target.value=''}
+function getFolderStyle(f){return folderIcons[f]||{icon:'📁',from:'#9ca3af',to:'#6b7280'}}
+function showExport(){const jsonStr=JSON.stringify(questions);const compressed=pako.deflate(jsonStr,{to:'string'});exportCode=btoa(compressed);showExportModal=true;render();setTimeout(()=>{const q=document.getElementById('qrcode');if(q){q.innerHTML='';try{new QRCode(q,{text:exportCode,width:200,height:200,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.L})}catch(e){console.error('QR oluşturulamadı:',e);q.innerHTML='<p style="color:#ef4444;">QR kod çok büyük! Manuel kod kullanın.</p>'}}},100)}
+function showImport(){showImportModal=true;isScanning=false;render()}
+function closeExport(){showExportModal=false;render()}
+function closeImport(){showImportModal=false;if(qrScanner){qrScanner.stop();qrScanner=null}isScanning=false;render()}
+function startQRScan(){isScanning=true;render();setTimeout(()=>{const c={fps:10,qrbox:{width:250,height:250}};qrScanner=new Html5Qrcode("qr-reader");qrScanner.start({facingMode:"environment"},c,(t)=>{qrScanner.stop();qrScanner=null;try{const compressed=atob(t);const decompressed=pako.inflate(compressed,{to:'string'});const d=JSON.parse(decompressed);if(confirm('QR okundu! İçe aktar?')){questions=d;saveQuestions();showImportModal=false;isScanning=false;render();alert('Aktarıldı! ✅')}}catch(e){alert('Geçersiz QR!')}}).catch(e=>{console.error(e);alert('Kamera hatası!')})},100)}
+function copyCode(){navigator.clipboard.writeText(exportCode).then(()=>{alert('Kod kopyalandı! ✅')})}
+function importData(){const t=document.getElementById('importTextarea');if(!t||!t.value.trim()){alert('Kodu yapıştır!');return}try{const compressed=atob(t.value.trim());const decompressed=pako.inflate(compressed,{to:'string'});const d=JSON.parse(decompressed);if(confirm('Veriler silinecek. Emin misin?')){questions=d;saveQuestions();showImportModal=false;render();alert('Aktarıldı! ✅')}}catch(e){alert('Geçersiz kod!')}}
+function openQuestion(qid){const p=getPathString();const q=questions[p].find(x=>x.id===qid);if(q){selectedQuestion=q;noteText=q.note;editingNote=false;render()}}
+function closeQuestion(){selectedQuestion=null;render()}
+function startEditNote(){editingNote=true;render()}
+function saveNote(){const t=document.getElementById('noteTextarea');if(t)noteText=t.value;const p=getPathString();questions[p]=questions[p].map(q=>q.id===selectedQuestion.id?{...q,note:noteText}:q);saveQuestions();editingNote=false;selectedQuestion.note=noteText;render()}
+function deleteQuestion(qid){if(confirm('Soruyu sil?')){const p=getPathString();questions[p]=questions[p].filter(q=>q.id!==qid);saveQuestions();selectedQuestion=null;render()}}
+function handleSolutionImage(e,qid){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onloadend=()=>{const p=getPathString();questions[p]=questions[p].map(q=>q.id===qid?{...q,solution:r.result}:q);saveQuestions();selectedQuestion.solution=r.result;render()};r.readAsDataURL(f)}
+function render(){const cf=getCurrentFolder();const lf=Object.keys(cf).length===0;const cq=questions[getPathString()]||[];let h='<div class="header"><div class="header-content"><div class="header-left"><div class="header-icon">✨</div><div><h1 class="header-title">YKS Soru Bankası</h1><p class="header-subtitle">Sorularını düzenli tut! 🎯</p></div></div><div class="sync-buttons"><button onclick="showExport()" class="sync-btn btn-export"><span>📤</span><span>Dışa Aktar</span></button><button onclick="showImport()" class="sync-btn btn-import"><span>📥</span><span>İçe Aktar</span></button></div></div></div><div class="content-box"><div class="nav-bar"><div class="nav-left">';if(currentPath.length>0)h+='<button onclick="handleBack()" class="back-btn">◀️</button>';h+='<div class="path-display"><span class="path-icon">📂</span><span class="path-text">'+getPathString()+'</span></div></div>';if(lf)h+='<div class="photo-buttons"><label class="add-btn"><input type="file" accept="image/*" capture="environment" onchange="handleQuestionImage(event)" class="hidden"><span>📸</span></label><label class="gallery-btn"><input type="file" accept="image/*" onchange="handleQuestionImage(event)" class="hidden"><span>🖼️</span></label></div>';h+='</div><div class="grid">';if(!lf){Object.keys(cf).forEach(f=>{const s=getFolderStyle(f);h+='<button onclick="handleFolderClick(\''+f+'\')" class="folder-card" style="--color-from:'+s.from+';--color-to:'+s.to+';"><span class="folder-icon">'+s.icon+'</span><div class="folder-name">'+f+'</div><span class="folder-arrow">▶️</span></button>'})}else if(cq.length===0)h+='<div class="empty-state"><div class="empty-icon">📸</div><p class="empty-title">Soru yok</p><p class="empty-subtitle">📸 ile ekle!</p></div>';else{cq.forEach((q,i)=>{h+='<div class="question-card" data-qid="'+q.id+'"><div class="question-img-container"><img src="'+q.image+'" class="question-img">';if(q.solution)h+='<div class="question-badge badge-left">✅</div>';if(q.note)h+='<div class="question-badge badge-right">📝</div>';h+='</div><div class="question-title">Soru '+(i+1)+'</div><div class="question-date"><span>🕐</span><span>'+q.date+'</span></div></div>'})}h+='</div></div>';if(showExportModal)h+='<div class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📤</span><span>Dışa Aktar</span></h3><button onclick="closeExport()" class="close-btn">❌</button></div></div><div class="modal-body"><p class="info-text">📱 Kodu kopyala veya QR tara:</p><div class="code-box">'+exportCode+'</div><div class="qr-container"><div id="qrcode"></div></div><button onclick="copyCode()" class="copy-btn">📋 Kopyala</button></div></div></div>';if(showImportModal){h+='<div class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📥</span><span>İçe Aktar</span></h3><button onclick="closeImport()" class="close-btn">❌</button></div></div><div class="modal-body"><p class="info-text">📱 QR tara veya kod yapıştır:</p>';if(!isScanning)h+='<button onclick="startQRScan()" class="scanner-btn"><span>📸</span><span>QR Tara</span></button>';else h+='<div class="qr-scanner-container"><div id="qr-reader"></div></div>';h+='<div class="divider"><span>veya</span></div><textarea id="importTextarea" class="import-textarea" placeholder="Kodu yapıştır..."></textarea><button onclick="importData()" class="import-btn">✅ İçe Aktar</button></div></div></div>'}if(selectedQuestion){h+='<div class="modal" onclick="if(event.target===this)closeQuestion()"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📚</span><span>Soru Detayı</span></h3><div style="display:flex;gap:0.5rem;"><button onclick="deleteQuestion('+selectedQuestion.id+')" style="background:#ef4444;color:white;border:none;padding:0.75rem;border-radius:12px;font-size:1.5rem;cursor:pointer;">🗑️</button><button onclick="closeQuestion()" class="close-btn">❌</button></div></div></div><div class="modal-body"><div style="margin-bottom:1.5rem;"><img src="'+selectedQuestion.image+'" style="width:100%;border-radius:16px;border:4px solid #f3f4f6;"></div><div style="margin-bottom:1.5rem;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;"><h4 style="font-weight:bold;font-size:1.1rem;color:#1f2937;display:flex;align-items:center;gap:0.5rem;"><span>📝</span><span>Notlarım</span></h4>';if(!editingNote)h+='<button onclick="startEditNote()" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:linear-gradient(to right,#fbbf24,#f59e0b);color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;"><span>✏️</span><span>Düzenle</span></button>';else h+='<button onclick="saveNote()" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:linear-gradient(to right,#4ade80,#10b981);color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;"><span>💾</span><span>Kaydet</span></button>';h+='</div>';if(editingNote)h+='<textarea id="noteTextarea" style="width:100%;padding:1rem;border:2px solid #e5e7eb;border-radius:16px;font-size:1rem;resize:vertical;" rows="5" placeholder="Notlarını yaz...">'+noteText+'</textarea>';else h+='<div style="padding:1rem;background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #fde047;border-radius:16px;min-height:120px;">'+(selectedQuestion.note?'<p style="color:#374151;white-space:pre-wrap;">'+selectedQuestion.note+'</p>':'<span style="color:#9ca3af;font-style:italic;">Not yok 📝</span>')+'</div>';h+='</div><div><h4 style="font-weight:bold;font-size:1.1rem;color:#1f2937;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem;"><span>✅</span><span>Çözüm</span></h4>';if(selectedQuestion.solution)h+='<img src="'+selectedQuestion.solution+'" style="width:100%;border-radius:16px;border:4px solid #bbf7d0;">';else h+='<label style="display:block;cursor:pointer;"><div style="border:4px dashed #d1d5db;border-radius:16px;padding:3rem;text-align:center;"><div style="font-size:4rem;margin-bottom:0.75rem;">📸</div><p style="color:#374151;font-weight:bold;font-size:1.1rem;">Çözüm ekle</p></div><input type="file" accept="image/*" onchange="handleSolutionImage(event,'+selectedQuestion.id+')" style="display:none;"></label>';h+='</div></div></div></div>'}document.getElementById('app').innerHTML=h;document.querySelectorAll('.question-card').forEach(card=>{card.addEventListener('click',function(e){e.preventDefault();const qid=parseInt(this.getAttribute('data-qid'));openQuestion(qid)})})}
+loadQuestions();render();
+if('serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(r=>console.log('✅ SW OK')).catch(e=>console.log('❌ SW:',e))})}
+    </script>
+</body>
+</html>
