@@ -347,7 +347,32 @@ function handleFolderClick(f){currentPath.push(f);render()}
 function handleBack(){currentPath.pop();render()}
 function handleQuestionImage(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onloadend=()=>{const p=getPathString();const q={id:Date.now(),image:r.result,note:'',solution:null,date:new Date().toLocaleDateString('tr-TR')};if(!questions[p])questions[p]=[];questions[p].push(q);saveQuestions();render();alert('Soru eklendi! ✅')};r.readAsDataURL(f);e.target.value=''}
 function getFolderStyle(f){return folderIcons[f]||{icon:'📁',from:'#9ca3af',to:'#6b7280'}}
-function showExport(){const jsonStr=JSON.stringify(questions);const compressed=pako.deflate(jsonStr,{to:'string'});exportCode=btoa(compressed);showExportModal=true;render();setTimeout(()=>{const q=document.getElementById('qrcode');if(q){q.innerHTML='';try{new QRCode(q,{text:exportCode,width:200,height:200,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.L})}catch(e){console.error('QR oluşturulamadı:',e);q.innerHTML='<p style="color:#ef4444;">QR kod çok büyük! Manuel kod kullanın.</p>'}}},100)}
+function showExport() {
+    const jsonStr = JSON.stringify(questions);
+    try {
+        // Veriyi sıkıştırıp koda çeviriyoruz
+        const compressed = pako.deflate(jsonStr, { to: 'string' });
+        exportCode = btoa(compressed);
+        
+        // Bu kısım kodu otomatik olarak telefona kopyalar
+        const el = document.createElement('textarea');
+        el.value = exportCode;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        
+        // İstediğin o mesaj kutusu
+        const shortCode = exportCode.substring(0, 35) + "...";
+        alert("Kod kopyalandı! Diğer cihazda yapıştır:\n\n" + shortCode);
+        
+    } catch(e) {
+        alert("Veri çok büyük olduğu için otomatik kopyalanamadı!");
+    }
+    
+    showExportModal = true; 
+    render();
+}
 function showImport(){showImportModal=true;isScanning=false;render()}
 function closeExport(){showExportModal=false;render()}
 function closeImport(){showImportModal=false;if(qrScanner){qrScanner.stop();qrScanner=null}isScanning=false;render()}
