@@ -3,592 +3,628 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#6366f1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="YKS Soru Bankası">
-    <link rel="manifest" href="manifest.json">
     <title>YKS Soru Bankası</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #e0e7ff 0%, #fae8ff 50%, #fce7f3 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 1rem;
         }
         .container { max-width: 1200px; margin: 0 auto; }
         .header {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
+            background: white;
+            border-radius: 20px;
             padding: 2rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        .header-content { display: flex; align-items: center; gap: 1rem; justify-content: space-between; flex-wrap: wrap; }
-        .header-left { display: flex; align-items: center; gap: 1rem; }
-        .header-icon { font-size: 3rem; }
-        .header-title {
+        .header h1 {
             font-size: 2rem;
-            font-weight: 900;
-            background: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
         }
-        .header-subtitle { color: #6b7280; margin-top: 0.5rem; }
-        .sync-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .sync-btn {
-            padding: 0.75rem 1rem;
+        .sync-code {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 12px;
+        }
+        .code-display {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 0.3rem;
+            color: #667eea;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
         }
-        .sync-btn:hover { transform: scale(1.05); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .sync-btn:active { transform: scale(0.95); }
-        .btn-export { background: linear-gradient(to right, #10b981, #14b8a6); color: white; }
-        .btn-import { background: linear-gradient(to right, #3b82f6, #6366f1); color: white; }
-        .content-box {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 1.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-success { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        .nav-bar {
+        .nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 0.5rem;
+            margin-bottom: 2rem;
             padding-bottom: 1rem;
-            border-bottom: 2px solid #f3f4f6;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
+            border-bottom: 2px solid #e2e8f0;
         }
-        .nav-left { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
         .back-btn {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 2rem;
             cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 12px;
-            transition: all 0.3s;
         }
-        .back-btn:hover { background: linear-gradient(to right, #e0e7ff, #f3e8ff); transform: scale(1.1); }
-        .path-display {
-            background: linear-gradient(to right, #f9fafb, #f3f4f6);
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .path { 
             flex: 1;
-            min-width: 0;
+            margin: 0 1rem;
+            padding: 0.75rem 1rem;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-weight: 600;
         }
-        .path-icon { font-size: 1.2rem; flex-shrink: 0; }
-        .path-text {
-            font-weight: bold;
-            color: #374151;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .add-btns {
+            display: flex;
+            gap: 0.5rem;
         }
         .add-btn {
-            background: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             border: none;
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 16px;
             font-size: 1.5rem;
             cursor: pointer;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-        .add-btn:active { transform: scale(0.95); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2); }
-        .gallery-btn {
-            background: linear-gradient(to right, #10b981, #14b8a6);
-            border: none;
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 16px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
         }
-        .gallery-btn:active { transform: scale(0.95); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2); }
-        .photo-buttons { display: flex; gap: 0.5rem; flex-shrink: 0; }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-        @media (min-width: 768px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-        .folder-card {
-            background: linear-gradient(135deg, var(--color-from), var(--color-to));
-            border: none;
+        .folder-card, .question-card {
+            padding: 2rem;
             border-radius: 16px;
-            padding: 1.5rem;
             cursor: pointer;
             transition: all 0.3s;
+            text-align: center;
             position: relative;
-            overflow: hidden;
         }
-        .folder-card:hover { transform: scale(1.05) rotate(-1deg); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
-        .folder-card:active { transform: scale(0.95); }
-        .folder-icon { font-size: 3rem; margin-bottom: 1rem; display: block; text-align: center; transition: transform 0.3s; }
-        .folder-card:hover .folder-icon { transform: scale(1.1); }
-        .folder-name { font-weight: bold; color: white; text-align: center; font-size: 1.1rem; }
-        .folder-arrow { position: absolute; bottom: 1rem; right: 1rem; font-size: 1.5rem; color: rgba(255, 255, 255, 0.7); }
-        .empty-state { grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; }
-        .empty-icon {
-            font-size: 5rem;
-            background: linear-gradient(135deg, #e0e7ff, #f3e8ff);
-            border-radius: 24px;
-            padding: 1.5rem;
-            display: inline-block;
-            margin-bottom: 1rem;
-            animation: bounce 2s infinite;
+        .folder-card {
+            background: linear-gradient(135deg, var(--from), var(--to));
+            color: white;
         }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .empty-title { font-size: 1.5rem; font-weight: bold; color: #4b5563; margin-bottom: 0.5rem; }
-        .empty-subtitle { color: #6b7280; }
+        .folder-card:hover, .question-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .folder-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .folder-name { font-size: 1.2rem; font-weight: 700; }
         .question-card {
             background: white;
-            border: 2px solid transparent;
-            border-radius: 16px;
-            padding: 1rem;
-            transition: all 0.3s;
-            position: relative;
-            cursor: pointer;
+            border: 3px solid #e2e8f0;
         }
-        .question-card:hover { transform: scale(1.05); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border-color: #a78bfa; }
-        .question-img-container {
-            aspect-ratio: 1;
-            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        .question-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
             border-radius: 12px;
-            margin-bottom: 0.75rem;
-            overflow: hidden;
-            position: relative;
+            margin-bottom: 1rem;
         }
-        .question-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
-        .question-card:hover .question-img { transform: scale(1.1); }
-        .question-badge { position: absolute; top: 0.5rem; font-size: 1.5rem; }
-        .badge-left { left: 0.5rem; }
-        .badge-right { right: 0.5rem; }
-        .question-title { font-weight: bold; color: #1f2937; font-size: 0.9rem; }
-        .question-date { display: flex; align-items: center; gap: 0.25rem; color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem; }
+        .badges {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+        }
         .modal {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.7);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
-            z-index: 50;
-            animation: fadeIn 0.3s;
+            z-index: 100;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .modal-content {
             background: white;
-            border-radius: 24px;
+            border-radius: 20px;
             max-width: 600px;
-            width: 100%;
+            width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            animation: slideUp 0.3s;
         }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .modal-header {
-            background: linear-gradient(to right, #6366f1, #a855f7);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 1.5rem;
-            border-radius: 24px 24px 0 0;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .modal-header-content { display: flex; justify-content: space-between; align-items: center; }
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 900;
+            border-radius: 20px 20px 0 0;
             color: white;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 0.75rem;
         }
-        .close-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.5rem;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .close-btn:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
         .modal-body { padding: 2rem; }
-        .import-btn, .export-btn-modal {
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .input-code {
             width: 100%;
             padding: 1rem;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: white;
-            margin-bottom: 1rem;
-        }
-        .import-btn { background: linear-gradient(to right, #3b82f6, #6366f1); }
-        .export-btn-modal { background: linear-gradient(to right, #10b981, #14b8a6); }
-        .import-btn:hover, .export-btn-modal:hover { transform: scale(1.02); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .info-text { color: #6b7280; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5; }
-        .drop-zone {
-            border: 3px dashed #cbd5e1;
-            border-radius: 16px;
-            padding: 3rem 2rem;
+            font-size: 2rem;
             text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
-            margin-bottom: 1rem;
+            letter-spacing: 0.5rem;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            margin: 1rem 0;
         }
-        .drop-zone:hover { border-color: #6366f1; background: #f9fafb; }
-        .drop-zone.drag-over { border-color: #10b981; background: #f0fdf4; }
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            resize: vertical;
+        }
         .hidden { display: none; }
+        .empty {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 4rem;
+            color: #a0aec0;
+        }
+        .empty-icon { font-size: 5rem; margin-bottom: 1rem; }
     </style>
 </head>
 <body>
     <div class="container" id="app"></div>
+    
     <script>
-const folderStructure={TYT:{'Türkçe':{'Dil Bilgisi':{},'Paragraf':{}},'Sosyal':{'Tarih':{},'Coğrafya':{},'Felsefe':{},'Din':{}},'Matematik':{'İlk 10 Konu':{},'Problem':{},'Geometri':{}},'Fen':{'Fizik':{},'Kimya':{},'Biyoloji':{}}},AYT:{'Edebiyat':{},'Sosyal-1':{},'Matematik':{}}};
-const folderIcons={'TYT':{icon:'📘',from:'#3b82f6',to:'#06b6d4'},'AYT':{icon:'⭐',from:'#a855f7',to:'#ec4899'},'Türkçe':{icon:'📖',from:'#f87171',to:'#fb923c'},'Sosyal':{icon:'🌍',from:'#4ade80',to:'#10b981'},'Matematik':{icon:'🔢',from:'#60a5fa',to:'#6366f1'},'Fen':{icon:'🧪',from:'#a78bfa',to:'#8b5cf6'},'Edebiyat':{icon:'✍️',from:'#f472b6',to:'#fb7185'},'Sosyal-1':{icon:'🗺️',from:'#2dd4bf',to:'#06b6d4'},'Tarih':{icon:'🏛️',from:'#fbbf24',to:'#f59e0b'},'Coğrafya':{icon:'🗺️',from:'#4ade80',to:'#14b8a6'},'Felsefe':{icon:'🤔',from:'#a78bfa',to:'#6366f1'},'Din':{icon:'☪️',from:'#34d399',to:'#10b981'},'Fizik':{icon:'⚡',from:'#fbbf24',to:'#fb923c'},'Kimya':{icon:'⚗️',from:'#a78bfa',to:'#ec4899'},'Biyoloji':{icon:'🧬',from:'#4ade80',to:'#84cc16'},'Dil Bilgisi':{icon:'📝',from:'#f87171',to:'#f472b6'},'Paragraf':{icon:'📄',from:'#fb923c',to:'#f87171'},'İlk 10 Konu':{icon:'1️⃣',from:'#60a5fa',to:'#06b6d4'},'Problem':{icon:'🧮',from:'#6366f1',to:'#60a5fa'},'Geometri':{icon:'📐',from:'#06b6d4',to:'#14b8a6'}};
-
-let currentPath=[], questions={}, showExportModal=false, showImportModal=false, selectedQuestion=null, editingNote=false, noteText='', db=null;
-
-// IndexedDB başlat
-async function initDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open('YKSDatabase', 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-            db = request.result;
-            resolve(db);
-        };
-        request.onupgradeneeded = (e) => {
-            const database = e.target.result;
-            if (!database.objectStoreNames.contains('questions')) {
-                database.createObjectStore('questions', { keyPath: 'id' });
+        const APP_NAME = 'YKSQuestions';
+        const folders = {
+            TYT: {
+                icon: '📘',
+                color: ['#4299e1', '#3182ce'],
+                children: {
+                    'Türkçe': {
+                        icon: '📖',
+                        color: ['#f56565', '#e53e3e'],
+                        children: {
+                            'Dil Bilgisi': { icon: '📝', color: ['#fc8181', '#f56565'] },
+                            'Paragraf': { icon: '📄', color: ['#feb2b2', '#fc8181'] }
+                        }
+                    },
+                    'Sosyal': {
+                        icon: '🌍',
+                        color: ['#48bb78', '#38a169'],
+                        children: {
+                            'Tarih': { icon: '🏛️', color: ['#ecc94b', '#d69e2e'] },
+                            'Coğrafya': { icon: '🗺️', color: ['#68d391', '#48bb78'] },
+                            'Felsefe': { icon: '🤔', color: ['#9f7aea', '#805ad5'] },
+                            'Din': { icon: '☪️', color: ['#4fd1c5', '#38b2ac'] }
+                        }
+                    },
+                    'Matematik': {
+                        icon: '🔢',
+                        color: ['#4299e1', '#3182ce'],
+                        children: {
+                            'İlk 10 Konu': { icon: '1️⃣', color: ['#63b3ed', '#4299e1'] },
+                            'Problem': { icon: '🧮', color: ['#4299e1', '#3182ce'] },
+                            'Geometri': { icon: '📐', color: ['#4fd1c5', '#38b2ac'] }
+                        }
+                    },
+                    'Fen': {
+                        icon: '🧪',
+                        color: ['#9f7aea', '#805ad5'],
+                        children: {
+                            'Fizik': { icon: '⚡', color: ['#f6ad55', '#ed8936'] },
+                            'Kimya': { icon: '⚗️', color: ['#b794f4', '#9f7aea'] },
+                            'Biyoloji': { icon: '🧬', color: ['#68d391', '#48bb78'] }
+                        }
+                    }
+                }
+            },
+            AYT: {
+                icon: '⭐',
+                color: ['#b794f4', '#9f7aea'],
+                children: {
+                    'Edebiyat': { icon: '✍️', color: ['#fc8181', '#f56565'] },
+                    'Sosyal-1': { icon: '🗺️', color: ['#4fd1c5', '#38b2ac'] },
+                    'Matematik': { icon: '🔢', color: ['#4299e1', '#3182ce'] }
+                }
             }
         };
-    });
-}
 
-// IndexedDB'ye kaydet
-async function saveToIndexedDB() {
-    if (!db) return;
-    const tx = db.transaction(['questions'], 'readwrite');
-    const store = tx.objectStore('questions');
-    store.put({ id: 'allQuestions', data: questions });
-}
+        let currentPath = [];
+        let questions = {};
+        let syncCode = '';
+        let showSyncModal = false;
+        let showQuestionModal = false;
+        let selectedQuestion = null;
+        let editingNote = false;
 
-// IndexedDB'den yükle
-async function loadFromIndexedDB() {
-    if (!db) return;
-    const tx = db.transaction(['questions'], 'readonly');
-    const store = tx.objectStore('questions');
-    const request = store.get('allQuestions');
-    
-    return new Promise((resolve) => {
-        request.onsuccess = () => {
-            if (request.result) {
-                questions = request.result.data;
-            }
-            resolve();
-        };
-        request.onerror = () => resolve();
-    });
-}
+        // Benzersiz 6 haneli kod oluştur
+        function generateSyncCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
 
-// localStorage'a da kaydet (yedek)
-function saveToLocalStorage() {
-    try {
-        localStorage.setItem('yksQuestions', JSON.stringify(questions));
-    } catch(e) {
-        console.log('localStorage hatası:', e);
-    }
-}
+        // IndexedDB başlat
+        let db;
+        async function initDB() {
+            return new Promise((resolve) => {
+                const request = indexedDB.open(APP_NAME, 2);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve();
+                };
+                request.onupgradeneeded = (e) => {
+                    const database = e.target.result;
+                    if (!database.objectStoreNames.contains('questions')) {
+                        database.createObjectStore('questions');
+                    }
+                    if (!database.objectStoreNames.contains('images')) {
+                        database.createObjectStore('images');
+                    }
+                };
+            });
+        }
 
-// Her iki yere kaydet
-async function saveQuestions() {
-    saveToLocalStorage();
-    await saveToIndexedDB();
-}
-
-// Verileri yükle
-async function loadQuestions() {
-    await loadFromIndexedDB();
-    
-    // IndexedDB boşsa localStorage'dan yükle
-    if (Object.keys(questions).length === 0) {
-        const s = localStorage.getItem('yksQuestions');
-        if (s) {
+        // Veri kaydet
+        async function saveData() {
+            if (!db) return;
+            const tx = db.transaction(['questions'], 'readwrite');
+            tx.objectStore('questions').put(questions, 'data');
+            
+            // localStorage'a da yedekle
             try {
-                questions = JSON.parse(s);
-                await saveToIndexedDB(); // IndexedDB'ye de kaydet
+                localStorage.setItem(APP_NAME, JSON.stringify(questions));
             } catch(e) {}
         }
-    }
-}
 
-function getCurrentFolder(){let c=folderStructure;for(const p of currentPath)c=c[p];return c}
-function getPathString(){return currentPath.join('/')||'Ana Sayfa'}
-function handleFolderClick(f){currentPath.push(f);render()}
-function handleBack(){currentPath.pop();render()}
-
-// Otomatik yedek indir
-function autoDownloadBackup() {
-    const data = JSON.stringify(questions, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `yks_yedek_${new Date().toLocaleDateString('tr-TR').replace(/\./g, '-')}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-async function handleQuestionImage(e){
-    const f=e.target.files[0];
-    if(!f)return;
-    const r=new FileReader();
-    r.onloadend=async()=>{
-        const p=getPathString();
-        const q={id:Date.now(),image:r.result,note:'',solution:null,date:new Date().toLocaleDateString('tr-TR')};
-        if(!questions[p])questions[p]=[];
-        questions[p].push(q);
-        await saveQuestions();
-        
-        // Otomatik yedek indir
-        autoDownloadBackup();
-        
-        render();
-        alert('Soru eklendi ve yedeklendi! ✅');
-    };
-    r.readAsDataURL(f);
-    e.target.value='';
-}
-
-function getFolderStyle(f){return folderIcons[f]||{icon:'📁',from:'#9ca3af',to:'#6b7280'}}
-
-// Manuel dışa aktar
-function showExport() {
-    showExportModal = true;
-    render();
-}
-
-// Dosya indir
-function downloadBackup() {
-    autoDownloadBackup();
-    alert('Yedek dosyan indirildi! 📥');
-    showExportModal = false;
-    render();
-}
-
-function showImport(){showImportModal=true;render()}
-function closeExport(){showExportModal=false;render()}
-function closeImport(){showImportModal=false;render()}
-
-// Dosya yükle
-function handleFileImport(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-        try {
-            const data = JSON.parse(event.target.result);
-            if (confirm('Mevcut veriler silinecek. Emin misin?')) {
-                questions = data;
-                await saveQuestions();
-                showImportModal = false;
-                render();
-                alert('Veriler yüklendi! ✅');
-            }
-        } catch(e) {
-            alert('Geçersiz dosya!');
+        // Veri yükle
+        async function loadData() {
+            if (!db) return;
+            const tx = db.transaction(['questions'], 'readonly');
+            const request = tx.objectStore('questions').get('data');
+            
+            return new Promise((resolve) => {
+                request.onsuccess = () => {
+                    if (request.result) {
+                        questions = request.result;
+                    } else {
+                        // IndexedDB boşsa localStorage'dan yükle
+                        const stored = localStorage.getItem(APP_NAME);
+                        if (stored) {
+                            try {
+                                questions = JSON.parse(stored);
+                            } catch(e) {}
+                        }
+                    }
+                    resolve();
+                };
+            });
         }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-}
 
-// Sürükle bırak
-function setupDropZone() {
-    const dropZone = document.getElementById('dropZone');
-    if (!dropZone) return;
-    
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('drag-over');
-    });
-    
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('drag-over');
-    });
-    
-    dropZone.addEventListener('drop', async (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
-        
-        const file = e.dataTransfer.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                const data = JSON.parse(event.target.result);
-                if (confirm('Mevcut veriler silinecek. Emin misin?')) {
-                    questions = data;
-                    await saveQuestions();
-                    showImportModal = false;
-                    render();
-                    alert('Veriler yüklendi! ✅');
-                }
-            } catch(e) {
-                alert('Geçersiz dosya!');
+        function getPath() {
+            return currentPath.join('/') || 'Ana Sayfa';
+        }
+
+        function getCurrentFolder() {
+            let current = folders;
+            for (let path of currentPath) {
+                current = current[path]?.children || current[path];
             }
-        };
-        reader.readAsText(file);
-    });
-}
+            return current;
+        }
 
-function openQuestion(qid){const p=getPathString();const q=questions[p].find(x=>x.id===qid);if(q){selectedQuestion=q;noteText=q.note;editingNote=false;render()}}
-function closeQuestion(){selectedQuestion=null;render()}
-function startEditNote(){editingNote=true;render()}
+        function goBack() {
+            currentPath.pop();
+            render();
+        }
 
-async function saveNote(){
-    const t=document.getElementById('noteTextarea');
-    if(t)noteText=t.value;
-    const p=getPathString();
-    questions[p]=questions[p].map(q=>q.id===selectedQuestion.id?{...q,note:noteText}:q);
-    await saveQuestions();
-    editingNote=false;
-    selectedQuestion.note=noteText;
-    render();
-}
+        function openFolder(name) {
+            currentPath.push(name);
+            render();
+        }
 
-async function deleteQuestion(qid){
-    if(confirm('Soruyu sil?')){
-        const p=getPathString();
-        questions[p]=questions[p].filter(q=>q.id!==qid);
-        await saveQuestions();
-        selectedQuestion=null;
-        render();
-    }
-}
+        async function addQuestion(e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-async function handleSolutionImage(e,qid){
-    const f=e.target.files[0];
-    if(!f)return;
-    const r=new FileReader();
-    r.onloadend=async()=>{
-        const p=getPathString();
-        questions[p]=questions[p].map(q=>q.id===qid?{...q,solution:r.result}:q);
-        await saveQuestions();
-        selectedQuestion.solution=r.result;
-        render();
-    };
-    r.readAsDataURL(f);
-}
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const path = getPath();
+                if (!questions[path]) questions[path] = [];
+                
+                questions[path].push({
+                    id: Date.now(),
+                    image: event.target.result,
+                    note: '',
+                    solution: null,
+                    date: new Date().toLocaleDateString('tr-TR')
+                });
 
-function render(){
-    const cf=getCurrentFolder();
-    const lf=Object.keys(cf).length===0;
-    const cq=questions[getPathString()]||[];
-    let h='<div class="header"><div class="header-content"><div class="header-left"><div class="header-icon">✨</div><div><h1 class="header-title">YKS Soru Bankası</h1><p class="header-subtitle">Sorularını düzenli tut! 🎯</p></div></div><div class="sync-buttons"><button onclick="showExport()" class="sync-btn btn-export"><span>📥</span><span>Yedek İndir</span></button><button onclick="showImport()" class="sync-btn btn-import"><span>📤</span><span>Yedek Yükle</span></button></div></div></div><div class="content-box"><div class="nav-bar"><div class="nav-left">';
-    if(currentPath.length>0)h+='<button onclick="handleBack()" class="back-btn">◀️</button>';
-    h+='<div class="path-display"><span class="path-icon">📂</span><span class="path-text">'+getPathString()+'</span></div></div>';
-    if(lf)h+='<div class="photo-buttons"><label class="add-btn"><input type="file" accept="image/*" capture="environment" onchange="handleQuestionImage(event)" class="hidden"><span>📸</span></label><label class="gallery-btn"><input type="file" accept="image/*" onchange="handleQuestionImage(event)" class="hidden"><span>🖼️</span></label></div>';
-    h+='</div><div class="grid">';
-    if(!lf){
-        Object.keys(cf).forEach(f=>{
-            const s=getFolderStyle(f);
-            h+='<button onclick="handleFolderClick(\''+f+'\')" class="folder-card" style="--color-from:'+s.from+';--color-to:'+s.to+';"><span class="folder-icon">'+s.icon+'</span><div class="folder-name">'+f+'</div><span class="folder-arrow">▶️</span></button>';
-        });
-    }else if(cq.length===0){
-        h+='<div class="empty-state"><div class="empty-icon">📸</div><p class="empty-title">Soru yok</p><p class="empty-subtitle">📸 ile ekle!</p></div>';
-    }else{
-        cq.forEach((q,i)=>{
-            h+='<div class="question-card" data-qid="'+q.id+'"><div class="question-img-container"><img src="'+q.image+'" class="question-img">';
-            if(q.solution)h+='<div class="question-badge badge-left">✅</div>';
-            if(q.note)h+='<div class="question-badge badge-right">📝</div>';
-            h+='</div><div class="question-title">Soru '+(i+1)+'</div><div class="question-date"><span>🕐</span><span>'+q.date+'</span></div></div>';
-        });
-    }
-    h+='</div></div>';
-    
-    if(showExportModal){
-        h+='<div class="modal" onclick="if(event.target===this)closeExport()"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📥</span><span>Yedek İndir</span></h3><button onclick="closeExport()" class="close-btn">❌</button></div></div><div class="modal-body"><p class="info-text">💾 Tüm sorularını yedek dosya olarak indir. Bu dosyayı sakla!</p><button onclick="downloadBackup()" class="export-btn-modal">📥 Dosyayı İndir</button></div></div></div>';
-    }
-    
-    if(showImportModal){
-        h+='<div class="modal" onclick="if(event.target===this)closeImport()"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📤</span><span>Yedek Yükle</span></h3><button onclick="closeImport()" class="close-btn">❌</button></div></div><div class="modal-body"><p class="info-text">📁 Yedek dosyanı seç veya sürükle bırak:</p><div class="drop-zone" id="dropZone" onclick="document.getElementById(\'fileInput\').click()"><div style="font-size:4rem;margin-bottom:1rem;">📁</div><p style="font-weight:bold;color:#374151;margin-bottom:0.5rem;">Dosyayı buraya sürükle</p><p style="color:#6b7280;">veya tıklayıp seç</p></div><input type="file" id="fileInput" accept=".json" onchange="handleFileImport(event)" class="hidden"></div></div></div>';
-    }
-    
-    if(selectedQuestion){
-        h+='<div class="modal" onclick="if(event.target===this)closeQuestion()"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📚</span><span>Soru Detayı</span></h3><div style="display:flex;gap:0.5rem;"><button onclick="deleteQuestion('+selectedQuestion.id+')" style="background:#ef4444;color:white;border:none;padding:0.75rem;border-radius:12px;font-size:1.5rem;cursor:pointer;">🗑️</button><button onclick="closeQuestion()" class="close-btn">❌</button></div></div></div><div class="modal-body"><div style="margin-bottom:1.5rem;"><img src="'+selectedQuestion.image+'" style="width:100%;border-radius:16px;border:4px solid #f3f4f6;"></div><div style="margin-bottom:1.5rem;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;"><h4 style="font-weight:bold;font-size:1.1rem;color:#1f2937;display:flex;align-items:center;gap:0.5rem;"><span>📝</span><span>Notlarım</span></h4>';
-        if(!editingNote)h+='<button onclick="startEditNote()" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:linear-gradient(to right,#fbbf24,#f59e0b);color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;"><span>✏️</span><span>Düzenle</span></button>';
-        else h+='<button onclick="saveNote()" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:linear-gradient(to right,#4ade80,#10b981);color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;"><span>💾</span><span>Kaydet</span></button>';
-        h+='</div>';
-        if(editingNote)h+='<textarea id="noteTextarea" style="width:100%;padding:1rem;border:2px solid #e5e7eb;border-radius:16px;font-size:1rem;resize:vertical;" rows="5" placeholder="Notlarını yaz...">'+noteText+'</textarea>';
-        else h+='<div style="padding:1rem;background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #fde047;border-radius:16px;min-height:120px;">'+(selectedQuestion.note?'<p style="color:#374151;white-space:pre-wrap;">'+selectedQuestion.note+'</p>':'<span style="color:#9ca3af;font-style:italic;">Not yok 📝</span>')+'</div>';
-        h+='</div><div><h4 style="font-weight:bold;font-size:1.1rem;color:#1f2937;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem;"><span>✅</span><span>Çözüm</span></h4>';
-        if(selectedQuestion.solution)h+='<img src="'+selectedQuestion.solution+'" style="width:100%;border-radius:16px;border:4px solid #bbf7d0;">';
-        else h+='<label style="display:block;cursor:pointer;"><div style="border:4px dashed #d1d5db;border-radius:16px;padding:3rem;text-align:center;"><div style="font-size:4rem;margin-bottom:0.75rem;">📸</div><p style="color:#374151;font-weight:bold;font-size:1.1rem;">Çözüm ekle</p></div><input type="file" accept="image/*" onchange="handleSolutionImage(event,'+selectedQuestion.id+')" style="display:none;"></label>';
-        h+='</div></div></div></div>';
-    }
-    
-    document.getElementById('app').innerHTML=h;
-    
-    document.querySelectorAll('.question-card').forEach(card=>{
-        card.addEventListener('click',function(e){
-            e.preventDefault();
-            const qid=parseInt(this.getAttribute('data-qid'));
-            openQuestion(qid);
-        });
-    });
-    
-    if(showImportModal) {
-        setTimeout(setupDropZone, 100);
-    }
-}
+                await saveData();
+                render();
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
 
-// Başlangıç
-(async () => {
-    await initDB();
-    await loadQuestions();
-    render();
-})();
+        function openQuestion(id) {
+            const path = getPath();
+            selectedQuestion = questions[path]?.find(q => q.id === id);
+            if (selectedQuestion) {
+                showQuestionModal = true;
+                editingNote = false;
+                render();
+            }
+        }
 
-if('serviceWorker' in navigator){
-    window.addEventListener('load',()=>{
-        navigator.serviceWorker.register('./sw.js').then(r=>console.log('✅ SW OK')).catch(e=>console.log('❌ SW:',e));
-    });
-}
+        async function saveNote() {
+            const textarea = document.getElementById('noteArea');
+            if (textarea && selectedQuestion) {
+                selectedQuestion.note = textarea.value;
+                const path = getPath();
+                questions[path] = questions[path].map(q => 
+                    q.id === selectedQuestion.id ? selectedQuestion : q
+                );
+                await saveData();
+                editingNote = false;
+                render();
+            }
+        }
+
+        async function addSolution(e) {
+            const file = e.target.files[0];
+            if (!file || !selectedQuestion) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                selectedQuestion.solution = event.target.result;
+                const path = getPath();
+                questions[path] = questions[path].map(q => 
+                    q.id === selectedQuestion.id ? selectedQuestion : q
+                );
+                await saveData();
+                render();
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
+
+        async function deleteQuestion() {
+            if (!confirm('Silmek istediğine emin misin?')) return;
+            
+            const path = getPath();
+            questions[path] = questions[path].filter(q => q.id !== selectedQuestion.id);
+            await saveData();
+            showQuestionModal = false;
+            selectedQuestion = null;
+            render();
+        }
+
+        // Senkronizasyon
+        function showSync() {
+            if (!syncCode) syncCode = generateSyncCode();
+            showSyncModal = true;
+            render();
+        }
+
+        async function connectWithCode() {
+            const input = document.getElementById('syncInput');
+            const code = input?.value?.toUpperCase();
+            
+            if (!code || code.length !== 6) {
+                alert('Geçerli bir kod gir!');
+                return;
+            }
+
+            // Burada gerçek bir backend olsaydı API çağrısı yapardık
+            // Şimdilik localStorage üzerinden simüle ediyoruz
+            const sharedData = localStorage.getItem('SYNC_' + code);
+            if (sharedData) {
+                if (confirm('Cihaz eşleşecek. Mevcut veriler silinecek!')) {
+                    questions = JSON.parse(sharedData);
+                    await saveData();
+                    showSyncModal = false;
+                    render();
+                    alert('Eşleşme başarılı! ✅');
+                }
+            } else {
+                alert('Kod bulunamadı! Diğer cihazda kodu oluştur.');
+            }
+        }
+
+        function shareCode() {
+            // Kodu paylaş
+            localStorage.setItem('SYNC_' + syncCode, JSON.stringify(questions));
+            alert('Kod aktif! Diğer cihazda bu kodu gir: ' + syncCode);
+        }
+
+        function render() {
+            const current = getCurrentFolder();
+            const isLeaf = !current || !Object.keys(current).some(k => current[k]?.children);
+            const questionList = questions[getPath()] || [];
+
+            let html = `
+                <div class="header">
+                    <h1>✨ YKS Soru Bankası</h1>
+                    <p>Sorularını organize et! 🎯</p>
+                    <div class="sync-code">
+                        <span>🔗 Cihaz Kodu:</span>
+                        <span class="code-display">${syncCode || '------'}</span>
+                        <button class="btn btn-primary" onclick="showSync()">Eşle</button>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <div class="nav">
+                        ${currentPath.length > 0 ? '<button class="back-btn" onclick="goBack()">◀️</button>' : ''}
+                        <div class="path">📂 ${getPath()}</div>
+                        ${isLeaf ? `
+                            <div class="add-btns">
+                                <label class="add-btn" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                                    <input type="file" accept="image/*" capture="environment" onchange="addQuestion(event)" class="hidden">
+                                    📸
+                                </label>
+                                <label class="add-btn" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                                    <input type="file" accept="image/*" onchange="addQuestion(event)" class="hidden">
+                                    🖼️
+                                </label>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="grid">
+            `;
+
+            if (!isLeaf) {
+                // Klasör görünümü
+                for (let name in current) {
+                    const folder = current[name];
+                    const colors = folder.color || ['#a0aec0', '#718096'];
+                    html += `
+                        <div class="folder-card" style="--from: ${colors[0]}; --to: ${colors[1]}" onclick="openFolder('${name}')">
+                            <div class="folder-icon">${folder.icon}</div>
+                            <div class="folder-name">${name}</div>
+                        </div>
+                    `;
+                }
+            } else if (questionList.length === 0) {
+                html += `
+                    <div class="empty">
+                        <div class="empty-icon">📸</div>
+                        <h3>Henüz soru yok</h3>
+                        <p>Kamerayı aç ve soru ekle!</p>
+                    </div>
+                `;
+            } else {
+                // Soru listesi
+                questionList.forEach((q, i) => {
+                    html += `
+                        <div class="question-card" onclick="openQuestion(${q.id})">
+                            ${q.solution || q.note ? `
+                                <div class="badges">
+                                    ${q.solution ? '✅' : ''}
+                                    ${q.note ? '📝' : ''}
+                                </div>
+                            ` : ''}
+                            <img src="${q.image}" class="question-img">
+                            <div><strong>Soru ${i + 1}</strong></div>
+                            <div style="color: #a0aec0; font-size: 0.9rem;">${q.date}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += '</div></div>';
+
+            // Sync Modal
+            if (showSyncModal) {
+                html += `
+                    <div class="modal" onclick="if(event.target===this) { showSyncModal=false; render(); }">
+                        <div class="modal-content" onclick="event.stopPropagation()">
+                            <div class="modal-header">
+                                <h2>🔗 Cihaz Eşle</h2>
+                                <button class="close-btn" onclick="showSyncModal=false; render()">✖</button>
+                            </div>
+                            <div class="modal-body">
+                                <h3>Senin Kodun:</h3>
+                                <div style="text-align: center; font-size: 3rem; font-weight: 900; color: #667eea; margin: 1rem 0;">
+                                    ${syncCode}
+                                </div>
+                                <button class="btn btn-success" style="width: 100%;" onclick="shareCode()">📤 Kodu Paylaş</button>
+                                
+                                <hr style="margin: 2rem 0; border: none; border-top: 2px solid #e2e8f0;">
+                                
+                                <h3>Başka Cihazdan Bağlan:</h3>
+                                <input type="text" id="syncInput" class="input-code" placeholder="XXXXXX" maxlength="6">
+                                <button class="btn btn-primary" style="width: 100%;" onclick="connectWithCode()">🔗 Bağlan</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Question Modal
+            if (showQuestionModal && selectedQuestion) {
+                html += `
+                    <div class="modal" onclick="if(event.target===this) { showQuestionModal=false; render(); }">
+                        <div class="modal-content" onclick="event.stopPropagation()">
+                            <div class="modal-header">
+                                <h2>📚 Soru Detayı</h2>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="close-btn" onclick="deleteQuestion()">🗑️</button>
+                                    <button class="close-btn" onclick="showQuestionModal=false; render()">✖</button>
+                                </div>
+                            </div>
+                            <div class="modal-body">
+                                <img src="${selectedQuestion.image}" style="width: 100%; border-radius: 12px; margin-bottom: 2rem;">
+                                
+                                <h3>📝 Notlar</h3>
+                                ${editingNote ? `
+                                    <textarea id="noteArea" rows="5">${selectedQuestion.note}</textarea>
+                                    <button class="btn btn-success" style="width: 100%; margin-top: 1rem;" onclick="saveNote()">💾 Kaydet</button>
+                                ` : `
+                                    <div style="background: #fef5e7; padding: 1rem; border-radius: 12px; margin: 1rem 0; min-height: 100px;">
+                                        ${selectedQuestion.note || '<em style="color: #a0aec0;">Not yok...</em>'}
+                                    </div>
+                                    <button class="btn btn-primary" onclick="editingNote=true; render()">✏️ Düzenle</button>
+                                `}
+                                
+                                <hr style="margin: 2rem 0; border: none; border-top: 2px solid #e2e8f0;">
+                                
+                                <h3>✅ Çözüm</h3>
+                                ${selectedQuestion.solution ? `
+                                    <img src="${selectedQuestion.solution}" style="width: 100%; border-radius: 12px; margin-top: 1rem;">
+                                ` : `
+                                    <label class="btn btn-success" style="width: 100%; margin-top: 1rem; display: block; text-align: center;">
+                                        📸 Çözüm Ekle
+                                        <input type="file" accept="image/*" onchange="addSolution(event)" class="hidden">
+                                    </label>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('app').innerHTML = html;
+        }
+
+        // Başlat
+        (async () => {
+            await initDB();
+            await loadData();
+            syncCode = generateSyncCode();
+            render();
+        })();
     </script>
 </body>
 </html>
