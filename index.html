@@ -9,9 +9,6 @@
     <meta name="apple-mobile-web-app-title" content="YKS Soru Bankası">
     <link rel="manifest" href="manifest.json">
     <title>YKS Soru Bankası</title>
-    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -245,43 +242,7 @@
         }
         .close-btn:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
         .modal-body { padding: 2rem; }
-        .code-box {
-            background: #1f2937;
-            color: #10b981;
-            padding: 1.5rem;
-            border-radius: 16px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            word-break: break-all;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 1rem;
-        }
-        .qr-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            background: #f9fafb;
-            border-radius: 16px;
-            margin-bottom: 1rem;
-            min-height: 250px;
-        }
-        #qrcode { display: inline-block; }
-        #qrcode img { display: block !important; margin: 0 auto !important; }
-        .import-textarea {
-            width: 100%;
-            min-height: 150px;
-            padding: 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 16px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            resize: vertical;
-            margin-bottom: 1rem;
-        }
-        .import-textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
-        .copy-btn, .import-btn {
+        .import-btn, .export-btn-modal {
             width: 100%;
             padding: 1rem;
             border: none;
@@ -290,45 +251,23 @@
             cursor: pointer;
             transition: all 0.3s;
             color: white;
+            margin-bottom: 1rem;
         }
-        .copy-btn { background: linear-gradient(to right, #10b981, #14b8a6); }
         .import-btn { background: linear-gradient(to right, #3b82f6, #6366f1); }
-        .copy-btn:hover, .import-btn:hover { transform: scale(1.02); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .export-btn-modal { background: linear-gradient(to right, #10b981, #14b8a6); }
+        .import-btn:hover, .export-btn-modal:hover { transform: scale(1.02); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .info-text { color: #6b7280; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5; }
-        .qr-scanner-container { width: 100%; max-width: 400px; margin: 0 auto 1rem; border-radius: 16px; overflow: hidden; }
-        .scanner-btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(to right, #8b5cf6, #a855f7);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        .scanner-btn:hover { transform: scale(1.02); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .divider {
-            display: flex;
-            align-items: center;
+        .drop-zone {
+            border: 3px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 3rem 2rem;
             text-align: center;
-            margin: 1.5rem 0;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 1rem;
         }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .divider span {
-            padding: 0 1rem;
-            color: #6b7280;
-            font-size: 0.9rem;
-        }
+        .drop-zone:hover { border-color: #6366f1; background: #f9fafb; }
+        .drop-zone.drag-over { border-color: #10b981; background: #f0fdf4; }
         .hidden { display: none; }
     </style>
 </head>
@@ -337,87 +276,319 @@
     <script>
 const folderStructure={TYT:{'Türkçe':{'Dil Bilgisi':{},'Paragraf':{}},'Sosyal':{'Tarih':{},'Coğrafya':{},'Felsefe':{},'Din':{}},'Matematik':{'İlk 10 Konu':{},'Problem':{},'Geometri':{}},'Fen':{'Fizik':{},'Kimya':{},'Biyoloji':{}}},AYT:{'Edebiyat':{},'Sosyal-1':{},'Matematik':{}}};
 const folderIcons={'TYT':{icon:'📘',from:'#3b82f6',to:'#06b6d4'},'AYT':{icon:'⭐',from:'#a855f7',to:'#ec4899'},'Türkçe':{icon:'📖',from:'#f87171',to:'#fb923c'},'Sosyal':{icon:'🌍',from:'#4ade80',to:'#10b981'},'Matematik':{icon:'🔢',from:'#60a5fa',to:'#6366f1'},'Fen':{icon:'🧪',from:'#a78bfa',to:'#8b5cf6'},'Edebiyat':{icon:'✍️',from:'#f472b6',to:'#fb7185'},'Sosyal-1':{icon:'🗺️',from:'#2dd4bf',to:'#06b6d4'},'Tarih':{icon:'🏛️',from:'#fbbf24',to:'#f59e0b'},'Coğrafya':{icon:'🗺️',from:'#4ade80',to:'#14b8a6'},'Felsefe':{icon:'🤔',from:'#a78bfa',to:'#6366f1'},'Din':{icon:'☪️',from:'#34d399',to:'#10b981'},'Fizik':{icon:'⚡',from:'#fbbf24',to:'#fb923c'},'Kimya':{icon:'⚗️',from:'#a78bfa',to:'#ec4899'},'Biyoloji':{icon:'🧬',from:'#4ade80',to:'#84cc16'},'Dil Bilgisi':{icon:'📝',from:'#f87171',to:'#f472b6'},'Paragraf':{icon:'📄',from:'#fb923c',to:'#f87171'},'İlk 10 Konu':{icon:'1️⃣',from:'#60a5fa',to:'#06b6d4'},'Problem':{icon:'🧮',from:'#6366f1',to:'#60a5fa'},'Geometri':{icon:'📐',from:'#06b6d4',to:'#14b8a6'}};
-let currentPath=[],questions={},showExportModal=false,showImportModal=false,exportCode='',qrScanner=null,isScanning=false,selectedQuestion=null,editingNote=false,noteText='';
 
-function loadQuestions(){const s=localStorage.getItem('yksQuestions');if(s)try{questions=JSON.parse(s)}catch(e){}}
-function saveQuestions(){localStorage.setItem('yksQuestions',JSON.stringify(questions))}
+let currentPath=[], questions={}, showExportModal=false, showImportModal=false, selectedQuestion=null, editingNote=false, noteText='', db=null;
+
+// IndexedDB başlat
+async function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('YKSDatabase', 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            db = request.result;
+            resolve(db);
+        };
+        request.onupgradeneeded = (e) => {
+            const database = e.target.result;
+            if (!database.objectStoreNames.contains('questions')) {
+                database.createObjectStore('questions', { keyPath: 'id' });
+            }
+        };
+    });
+}
+
+// IndexedDB'ye kaydet
+async function saveToIndexedDB() {
+    if (!db) return;
+    const tx = db.transaction(['questions'], 'readwrite');
+    const store = tx.objectStore('questions');
+    store.put({ id: 'allQuestions', data: questions });
+}
+
+// IndexedDB'den yükle
+async function loadFromIndexedDB() {
+    if (!db) return;
+    const tx = db.transaction(['questions'], 'readonly');
+    const store = tx.objectStore('questions');
+    const request = store.get('allQuestions');
+    
+    return new Promise((resolve) => {
+        request.onsuccess = () => {
+            if (request.result) {
+                questions = request.result.data;
+            }
+            resolve();
+        };
+        request.onerror = () => resolve();
+    });
+}
+
+// localStorage'a da kaydet (yedek)
+function saveToLocalStorage() {
+    try {
+        localStorage.setItem('yksQuestions', JSON.stringify(questions));
+    } catch(e) {
+        console.log('localStorage hatası:', e);
+    }
+}
+
+// Her iki yere kaydet
+async function saveQuestions() {
+    saveToLocalStorage();
+    await saveToIndexedDB();
+}
+
+// Verileri yükle
+async function loadQuestions() {
+    await loadFromIndexedDB();
+    
+    // IndexedDB boşsa localStorage'dan yükle
+    if (Object.keys(questions).length === 0) {
+        const s = localStorage.getItem('yksQuestions');
+        if (s) {
+            try {
+                questions = JSON.parse(s);
+                await saveToIndexedDB(); // IndexedDB'ye de kaydet
+            } catch(e) {}
+        }
+    }
+}
+
 function getCurrentFolder(){let c=folderStructure;for(const p of currentPath)c=c[p];return c}
 function getPathString(){return currentPath.join('/')||'Ana Sayfa'}
 function handleFolderClick(f){currentPath.push(f);render()}
 function handleBack(){currentPath.pop();render()}
-function handleQuestionImage(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onloadend=()=>{const p=getPathString();const q={id:Date.now(),image:r.result,note:'',solution:null,date:new Date().toLocaleDateString('tr-TR')};if(!questions[p])questions[p]=[];questions[p].push(q);saveQuestions();render();alert('Soru eklendi! ✅')};r.readAsDataURL(f);e.target.value=''}
-function getFolderStyle(f){return folderIcons[f]||{icon:'📁',from:'#9ca3af',to:'#6b7280'}}
-function showExport(){const jsonStr=JSON.stringify(questions);const compressed=pako.deflate(jsonStr,{to:'string'});exportCode=btoa(compressed);showExportModal=true;render();setTimeout(()=>{const q=document.getElementById('qrcode');if(q){q.innerHTML='';try{new QRCode(q,{text:exportCode,width:200,height:200,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.L})}catch(e){console.error('QR oluşturulamadı:',e);q.innerHTML='<p style="color:#ef4444;">QR kod çok büyük! Manuel kod kullanın.</p>'}}},100)}
-function showImport(){showImportModal=true;isScanning=false;render()}
-function closeExport(){showExportModal=false;render()}
-function closeImport(){showImportModal=false;if(qrScanner){qrScanner.stop();qrScanner=null}isScanning=false;render()}
-function startQRScan(){isScanning=true;render();setTimeout(()=>{const c={fps:10,qrbox:{width:250,height:250}};qrScanner=new Html5Qrcode("qr-reader");qrScanner.start({facingMode:"environment"},c,(t)=>{qrScanner.stop();qrScanner=null;try{const compressed=atob(t);const decompressed=pako.inflate(compressed,{to:'string'});const d=JSON.parse(decompressed);if(confirm('QR okundu! İçe aktar?')){questions=d;saveQuestions();showImportModal=false;isScanning=false;render();alert('Aktarıldı! ✅')}}catch(e){alert('Geçersiz QR!')}}).catch(e=>{console.error(e);alert('Kamera hatası!')})},100)}
-function copyCode(){navigator.clipboard.writeText(exportCode).then(()=>{alert('Kod kopyalandı! ✅')})}
-function importData(){const t=document.getElementById('importTextarea');if(!t||!t.value.trim()){alert('Kodu yapıştır!');return}try{const compressed=atob(t.value.trim());const decompressed=pako.inflate(compressed,{to:'string'});const d=JSON.parse(decompressed);if(confirm('Veriler silinecek. Emin misin?')){questions=d;saveQuestions();showImportModal=false;render();alert('Aktarıldı! ✅')}}catch(e){alert('Geçersiz kod!')}}
-function openQuestion(qid){const p=getPathString();const q=questions[p].find(x=>x.id===qid);if(q){selectedQuestion=q;noteText=q.note;editingNote=false;render()}}
-function closeQuestion(){selectedQuestion=null;render()}
-function startEditNote(){editingNote=true;render()}
-function saveNote(){const t=document.getElementById('noteTextarea');if(t)noteText=t.value;const p=getPathString();questions[p]=questions[p].map(q=>q.id===selectedQuestion.id?{...q,note:noteText}:q);saveQuestions();editingNote=false;selectedQuestion.note=noteText;render()}
-function deleteQuestion(qid){if(confirm('Soruyu sil?')){const p=getPathString();questions[p]=questions[p].filter(q=>q.id!==qid);saveQuestions();selectedQuestion=null;render()}}
-function handleQuestionImage(e) {
-    const f = e.target.files[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 800; 
-            const scaleSize = MAX_WIDTH / img.width;
-            canvas.width = MAX_WIDTH;
-            canvas.height = img.height * scaleSize;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-            
-            const p = getPathString();
-            const q = { id: Date.now(), image: dataUrl, note: '', solution: null, date: new Date().toLocaleDateString('tr-TR') };
-            if (!questions[p]) questions[p] = [];
-            questions[p].push(q);
-            saveQuestions();
-            render();
-            alert('Soru eklendi! ✅');
-        };
-        img.src = event.target.result;
+
+// Otomatik yedek indir
+function autoDownloadBackup() {
+    const data = JSON.stringify(questions, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `yks_yedek_${new Date().toLocaleDateString('tr-TR').replace(/\./g, '-')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+async function handleQuestionImage(e){
+    const f=e.target.files[0];
+    if(!f)return;
+    const r=new FileReader();
+    r.onloadend=async()=>{
+        const p=getPathString();
+        const q={id:Date.now(),image:r.result,note:'',solution:null,date:new Date().toLocaleDateString('tr-TR')};
+        if(!questions[p])questions[p]=[];
+        questions[p].push(q);
+        await saveQuestions();
+        
+        // Otomatik yedek indir
+        autoDownloadBackup();
+        
+        render();
+        alert('Soru eklendi ve yedeklendi! ✅');
     };
     r.readAsDataURL(f);
+    e.target.value='';
+}
+
+function getFolderStyle(f){return folderIcons[f]||{icon:'📁',from:'#9ca3af',to:'#6b7280'}}
+
+// Manuel dışa aktar
+function showExport() {
+    showExportModal = true;
+    render();
+}
+
+// Dosya indir
+function downloadBackup() {
+    autoDownloadBackup();
+    alert('Yedek dosyan indirildi! 📥');
+    showExportModal = false;
+    render();
+}
+
+function showImport(){showImportModal=true;render()}
+function closeExport(){showExportModal=false;render()}
+function closeImport(){showImportModal=false;render()}
+
+// Dosya yükle
+function handleFileImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (confirm('Mevcut veriler silinecek. Emin misin?')) {
+                questions = data;
+                await saveQuestions();
+                showImportModal = false;
+                render();
+                alert('Veriler yüklendi! ✅');
+            }
+        } catch(e) {
+            alert('Geçersiz dosya!');
+        }
+    };
+    reader.readAsText(file);
     e.target.value = '';
 }
 
-function handleSolutionImage(e, qid) {
-    const f = e.target.files[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 600;
-            const scaleSize = MAX_WIDTH / img.width;
-            canvas.width = MAX_WIDTH;
-            canvas.height = img.height * scaleSize;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-            
-            const p = getPathString();
-            questions[p] = questions[p].map(q => q.id === qid ? { ...q, solution: dataUrl } : q);
-            saveQuestions();
-            if(selectedQuestion) selectedQuestion.solution = dataUrl;
-            render();
+// Sürükle bırak
+function setupDropZone() {
+    const dropZone = document.getElementById('dropZone');
+    if (!dropZone) return;
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+    });
+    
+    dropZone.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                if (confirm('Mevcut veriler silinecek. Emin misin?')) {
+                    questions = data;
+                    await saveQuestions();
+                    showImportModal = false;
+                    render();
+                    alert('Veriler yüklendi! ✅');
+                }
+            } catch(e) {
+                alert('Geçersiz dosya!');
+            }
         };
-        img.src = event.target.result;
+        reader.readAsText(file);
+    });
+}
+
+function openQuestion(qid){const p=getPathString();const q=questions[p].find(x=>x.id===qid);if(q){selectedQuestion=q;noteText=q.note;editingNote=false;render()}}
+function closeQuestion(){selectedQuestion=null;render()}
+function startEditNote(){editingNote=true;render()}
+
+async function saveNote(){
+    const t=document.getElementById('noteTextarea');
+    if(t)noteText=t.value;
+    const p=getPathString();
+    questions[p]=questions[p].map(q=>q.id===selectedQuestion.id?{...q,note:noteText}:q);
+    await saveQuestions();
+    editingNote=false;
+    selectedQuestion.note=noteText;
+    render();
+}
+
+async function deleteQuestion(qid){
+    if(confirm('Soruyu sil?')){
+        const p=getPathString();
+        questions[p]=questions[p].filter(q=>q.id!==qid);
+        await saveQuestions();
+        selectedQuestion=null;
+        render();
+    }
+}
+
+async function handleSolutionImage(e,qid){
+    const f=e.target.files[0];
+    if(!f)return;
+    const r=new FileReader();
+    r.onloadend=async()=>{
+        const p=getPathString();
+        questions[p]=questions[p].map(q=>q.id===qid?{...q,solution:r.result}:q);
+        await saveQuestions();
+        selectedQuestion.solution=r.result;
+        render();
     };
     r.readAsDataURL(f);
 }
-function render(){const cf=getCurrentFolder();const lf=Object.keys(cf).length===0;const cq=questions[getPathString()]||[];let h='<div class="header"><div class="header-content"><div class="header-left"><div class="header-icon">✨</div><div><h1 class="header-title">YKS Soru Bankası</h1><p class="header-subtitle">Sorularını düzenli tut! 🎯</p></div></div><div class="sync-buttons"><button onclick="showExport()" class="sync-btn btn-export"><span>📤</span><span>Dışa Aktar</span></button><button onclick="showImport()" class="sync-btn btn-import"><span>📥</span><span>İçe Aktar</span></button></div></div></div><div class="content-box"><div class="nav-bar"><div class="nav-left">';if(currentPath.length>0)h+='<button onclick="handleBack()" class="back-btn">◀️</button>';h+='<div class="path-display"><span class="path-icon">📂</span><span class="path-text">'+getPathString()+'</span></div></div>';if(lf)h+='<div class="photo-buttons"><label class="add-btn"><input type="file" accept="image/*" capture="environment" onchange="handleQuestionImage(event)" class="hidden"><span>📸</span></label><label class="gallery-btn"><input type="file" accept="image/*" onchange="handleQuestionImage(event)" class="hidden"><span>🖼️</span></label></div>';h+='</div><div class="grid">';if(!lf){Object.keys(cf).forEach(f=>{const s=getFolderStyle(f);h+='<button onclick="handleFolderClick(\''+f+'\')" class="folder-card" style="--color-from:'+s.from+';--color-to:'+s.to+';"><span class="folder-icon">'+s.icon+'</span><div class="folder-name">'+f+'</div><span class="folder-arrow">▶️</span></button>'})}else if(cq.length===0)h+='<div class="empty-state"><div class="empty-icon">📸</div><p class="empty-title">Soru yok</p><p class="empty-subtitle">📸 ile ekle!</p></div>';else{cq.forEach((q,i)=>{h+='<div class="question-card" data-qid="'+q.id+'"><div class="question-img-container"><img src="'+q.image+'" class="question-img">';if(q.solution)h+='<div class="question-badge badge-left">✅</div>';if(q.note)h+='<div class="question-badge badge-right">📝</div>';h+='</div><div class="question-title">Soru '+(i+1)+'</div><div class="question-date"><span>🕐</span><span>'+q.date+'</span></div></div>'})}h+='</div></div>';if(showExportModal)h+='<div class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📤</span><span>Dışa Aktar</span></h3><button onclick="closeExport()" class="close-btn">❌</button></div></div><div class="modal-body"><p class="info-text">📱 Kodu kopyala veya QR tara:</p><div class="code-box">'+exportCode+'</div><div class="qr-container"><div id="qrcode"></div></div><button onclick="copyCode()" class="copy-btn">📋 Kopyala</button></div></div></div>';if(showImportModal){h+='<div class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📥</span><span>İçe Aktar</span></h3><button onclick="closeImport()" class="close-btn">❌</button></div></div><div class="modal-body"><p class="info-text">📱 QR tara veya kod yapıştır:</p>';if(!isScanning)h+='<button onclick="startQRScan()" class="scanner-btn"><span>📸</span><span>QR Tara</span></button>';else h+='<div class="qr-scanner-container"><div id="qr-reader"></div></div>';h+='<div class="divider"><span>veya</span></div><textarea id="importTextarea" class="import-textarea" placeholder="Kodu yapıştır..."></textarea><button onclick="importData()" class="import-btn">✅ İçe Aktar</button></div></div></div>'}if(selectedQuestion){h+='<div class="modal" onclick="if(event.target===this)closeQuestion()"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📚</span><span>Soru Detayı</span></h3><div style="display:flex;gap:0.5rem;"><button onclick="deleteQuestion('+selectedQuestion.id+')" style="background:#ef4444;color:white;border:none;padding:0.75rem;border-radius:12px;font-size:1.5rem;cursor:pointer;">🗑️</button><button onclick="closeQuestion()" class="close-btn">❌</button></div></div></div><div class="modal-body"><div style="margin-bottom:1.5rem;"><img src="'+selectedQuestion.image+'" style="width:100%;border-radius:16px;border:4px solid #f3f4f6;"></div><div style="margin-bottom:1.5rem;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;"><h4 style="font-weight:bold;font-size:1.1rem;color:#1f2937;display:flex;align-items:center;gap:0.5rem;"><span>📝</span><span>Notlarım</span></h4>';if(!editingNote)h+='<button onclick="startEditNote()" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:linear-gradient(to right,#fbbf24,#f59e0b);color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;"><span>✏️</span><span>Düzenle</span></button>';else h+='<button onclick="saveNote()" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:linear-gradient(to right,#4ade80,#10b981);color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;"><span>💾</span><span>Kaydet</span></button>';h+='</div>';if(editingNote)h+='<textarea id="noteTextarea" style="width:100%;padding:1rem;border:2px solid #e5e7eb;border-radius:16px;font-size:1rem;resize:vertical;" rows="5" placeholder="Notlarını yaz...">'+noteText+'</textarea>';else h+='<div style="padding:1rem;background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #fde047;border-radius:16px;min-height:120px;">'+(selectedQuestion.note?'<p style="color:#374151;white-space:pre-wrap;">'+selectedQuestion.note+'</p>':'<span style="color:#9ca3af;font-style:italic;">Not yok 📝</span>')+'</div>';h+='</div><div><h4 style="font-weight:bold;font-size:1.1rem;color:#1f2937;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem;"><span>✅</span><span>Çözüm</span></h4>';if(selectedQuestion.solution)h+='<img src="'+selectedQuestion.solution+'" style="width:100%;border-radius:16px;border:4px solid #bbf7d0;">';else h+='<label style="display:block;cursor:pointer;"><div style="border:4px dashed #d1d5db;border-radius:16px;padding:3rem;text-align:center;"><div style="font-size:4rem;margin-bottom:0.75rem;">📸</div><p style="color:#374151;font-weight:bold;font-size:1.1rem;">Çözüm ekle</p></div><input type="file" accept="image/*" onchange="handleSolutionImage(event,'+selectedQuestion.id+')" style="display:none;"></label>';h+='</div></div></div></div>'}document.getElementById('app').innerHTML=h;document.querySelectorAll('.question-card').forEach(card=>{card.addEventListener('click',function(e){e.preventDefault();const qid=parseInt(this.getAttribute('data-qid'));openQuestion(qid)})})}
-loadQuestions();render();
-if('serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(r=>console.log('✅ SW OK')).catch(e=>console.log('❌ SW:',e))})}
+
+function render(){
+    const cf=getCurrentFolder();
+    const lf=Object.keys(cf).length===0;
+    const cq=questions[getPathString()]||[];
+    let h='<div class="header"><div class="header-content"><div class="header-left"><div class="header-icon">✨</div><div><h1 class="header-title">YKS Soru Bankası</h1><p class="header-subtitle">Sorularını düzenli tut! 🎯</p></div></div><div class="sync-buttons"><button onclick="showExport()" class="sync-btn btn-export"><span>📥</span><span>Yedek İndir</span></button><button onclick="showImport()" class="sync-btn btn-import"><span>📤</span><span>Yedek Yükle</span></button></div></div></div><div class="content-box"><div class="nav-bar"><div class="nav-left">';
+    if(currentPath.length>0)h+='<button onclick="handleBack()" class="back-btn">◀️</button>';
+    h+='<div class="path-display"><span class="path-icon">📂</span><span class="path-text">'+getPathString()+'</span></div></div>';
+    if(lf)h+='<div class="photo-buttons"><label class="add-btn"><input type="file" accept="image/*" capture="environment" onchange="handleQuestionImage(event)" class="hidden"><span>📸</span></label><label class="gallery-btn"><input type="file" accept="image/*" onchange="handleQuestionImage(event)" class="hidden"><span>🖼️</span></label></div>';
+    h+='</div><div class="grid">';
+    if(!lf){
+        Object.keys(cf).forEach(f=>{
+            const s=getFolderStyle(f);
+            h+='<button onclick="handleFolderClick(\''+f+'\')" class="folder-card" style="--color-from:'+s.from+';--color-to:'+s.to+';"><span class="folder-icon">'+s.icon+'</span><div class="folder-name">'+f+'</div><span class="folder-arrow">▶️</span></button>';
+        });
+    }else if(cq.length===0){
+        h+='<div class="empty-state"><div class="empty-icon">📸</div><p class="empty-title">Soru yok</p><p class="empty-subtitle">📸 ile ekle!</p></div>';
+    }else{
+        cq.forEach((q,i)=>{
+            h+='<div class="question-card" data-qid="'+q.id+'"><div class="question-img-container"><img src="'+q.image+'" class="question-img">';
+            if(q.solution)h+='<div class="question-badge badge-left">✅</div>';
+            if(q.note)h+='<div class="question-badge badge-right">📝</div>';
+            h+='</div><div class="question-title">Soru '+(i+1)+'</div><div class="question-date"><span>🕐</span><span>'+q.date+'</span></div></div>';
+        });
+    }
+    h+='</div></div>';
+    
+    if(showExportModal){
+        h+='<div class="modal" onclick="if(event.target===this)closeExport()"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📥</span><span>Yedek İndir</span></h3><button onclick="closeExport()" class="close-btn">❌</button></div></div><div class="modal-body"><p class="info-text">💾 Tüm sorularını yedek dosya olarak indir. Bu dosyayı sakla!</p><button onclick="downloadBackup()" class="export-btn-modal">📥 Dosyayı İndir</button></div></div></div>';
+    }
+    
+    if(showImportModal){
+        h+='<div class="modal" onclick="if(event.target===this)closeImport()"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📤</span><span>Yedek Yükle</span></h3><button onclick="closeImport()" class="close-btn">❌</button></div></div><div class="modal-body"><p class="info-text">📁 Yedek dosyanı seç veya sürükle bırak:</p><div class="drop-zone" id="dropZone" onclick="document.getElementById(\'fileInput\').click()"><div style="font-size:4rem;margin-bottom:1rem;">📁</div><p style="font-weight:bold;color:#374151;margin-bottom:0.5rem;">Dosyayı buraya sürükle</p><p style="color:#6b7280;">veya tıklayıp seç</p></div><input type="file" id="fileInput" accept=".json" onchange="handleFileImport(event)" class="hidden"></div></div></div>';
+    }
+    
+    if(selectedQuestion){
+        h+='<div class="modal" onclick="if(event.target===this)closeQuestion()"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><div class="modal-header-content"><h3 class="modal-title"><span>📚</span><span>Soru Detayı</span></h3><div style="display:flex;gap:0.5rem;"><button onclick="deleteQuestion('+selectedQuestion.id+')" style="background:#ef4444;color:white;border:none;padding:0.75rem;border-radius:12px;font-size:1.5rem;cursor:pointer;">🗑️</button><button onclick="closeQuestion()" class="close-btn">❌</button></div></div></div><div class="modal-body"><div style="margin-bottom:1.5rem;"><img src="'+selectedQuestion.image+'" style="width:100%;border-radius:16px;border:4px solid #f3f4f6;"></div><div style="margin-bottom:1.5rem;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;"><h4 style="font-weight:bold;font-size:1.1rem;color:#1f2937;display:flex;align-items:center;gap:0.5rem;"><span>📝</span><span>Notlarım</span></h4>';
+        if(!editingNote)h+='<button onclick="startEditNote()" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:linear-gradient(to right,#fbbf24,#f59e0b);color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;"><span>✏️</span><span>Düzenle</span></button>';
+        else h+='<button onclick="saveNote()" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:linear-gradient(to right,#4ade80,#10b981);color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;"><span>💾</span><span>Kaydet</span></button>';
+        h+='</div>';
+        if(editingNote)h+='<textarea id="noteTextarea" style="width:100%;padding:1rem;border:2px solid #e5e7eb;border-radius:16px;font-size:1rem;resize:vertical;" rows="5" placeholder="Notlarını yaz...">'+noteText+'</textarea>';
+        else h+='<div style="padding:1rem;background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #fde047;border-radius:16px;min-height:120px;">'+(selectedQuestion.note?'<p style="color:#374151;white-space:pre-wrap;">'+selectedQuestion.note+'</p>':'<span style="color:#9ca3af;font-style:italic;">Not yok 📝</span>')+'</div>';
+        h+='</div><div><h4 style="font-weight:bold;font-size:1.1rem;color:#1f2937;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem;"><span>✅</span><span>Çözüm</span></h4>';
+        if(selectedQuestion.solution)h+='<img src="'+selectedQuestion.solution+'" style="width:100%;border-radius:16px;border:4px solid #bbf7d0;">';
+        else h+='<label style="display:block;cursor:pointer;"><div style="border:4px dashed #d1d5db;border-radius:16px;padding:3rem;text-align:center;"><div style="font-size:4rem;margin-bottom:0.75rem;">📸</div><p style="color:#374151;font-weight:bold;font-size:1.1rem;">Çözüm ekle</p></div><input type="file" accept="image/*" onchange="handleSolutionImage(event,'+selectedQuestion.id+')" style="display:none;"></label>';
+        h+='</div></div></div></div>';
+    }
+    
+    document.getElementById('app').innerHTML=h;
+    
+    document.querySelectorAll('.question-card').forEach(card=>{
+        card.addEventListener('click',function(e){
+            e.preventDefault();
+            const qid=parseInt(this.getAttribute('data-qid'));
+            openQuestion(qid);
+        });
+    });
+    
+    if(showImportModal) {
+        setTimeout(setupDropZone, 100);
+    }
+}
+
+// Başlangıç
+(async () => {
+    await initDB();
+    await loadQuestions();
+    render();
+})();
+
+if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>{
+        navigator.serviceWorker.register('./sw.js').then(r=>console.log('✅ SW OK')).catch(e=>console.log('❌ SW:',e));
+    });
+}
     </script>
 </body>
 </html>
